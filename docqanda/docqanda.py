@@ -16,6 +16,16 @@ from langchain.callbacks.stdout import StdOutCallbackHandler
 
 
 def warn_openai(model: str):
+    """
+    Warns the user about the potential cost and data sharing implications of using the OpenAI model.
+
+    Args:
+        model (str): The name of the model being used.
+
+    Returns:
+        None.
+    """
+
     if model == "openai":
         msg = """
         WARNING: Using the OpenAI model will cost money, and will share your data with
@@ -25,6 +35,7 @@ def warn_openai(model: str):
         ans = input(msg)
         if ans != "Y":
             exit(1)
+
 
 def create_embeddings(textfile: str, isOpenAI: bool) -> VectorStoreRetriever:
     """
@@ -111,7 +122,7 @@ if __name__ == "__main__":
             "ggml-alpaca-7b-q4.bin",
             "ggml-gpt4all-l13b-snoozy.bin",
             "gpt4all-lora-quantized.bin",
-            "openai"
+            "openai",
         ],
         default="ggml-gpt4all-j-v1.3-groovy.bin",
         help="LLM Model name to use.  Must be downloaded to the models directory before starting.",
