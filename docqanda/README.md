@@ -45,6 +45,6 @@ If you choose `--model openai` then you will need an OpenAI API key for this dem
 - Source the virtual env `source venv/bin/activate`
 - Run the demo with `python docqanda.py --inputfile shakespeare.txt`
   - Run new queries using the --query flag
-  - Adjust --threads for number of threads and --n_ctx for the context length
-  - Set the OpenAI enviroment variable (bash) with `export OPENAI_API_KEY="your key goes here"` if you choose --model openai
+  - Adjust `--threads` for number of threads and `--n_ctx` for the context length
+  - Set the OpenAI enviroment variable (bash) with `export OPENAI_API_KEY="your key goes here"` if you choose `--model openai`
 
