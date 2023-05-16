@@ -52,6 +52,7 @@ nvidia-cusolver-cu11==11.4.0.1
 nvidia-cusparse-cu11==11.7.4.91
 nvidia-nccl-cu11==2.14.3
 nvidia-nvtx-cu11==11.7.91
+openai==0.27.6
 openapi-schema-pydantic==1.2.4
 packaging==23.1
 pandas==2.0.1
@@ -80,6 +81,7 @@ starlette==0.26.1
 sympy==1.12
 tenacity==8.2.2
 threadpoolctl==3.1.0
+tiktoken==0.4.0
 tokenizers==0.13.3
 tomli==2.0.1
 torch==2.0.1
