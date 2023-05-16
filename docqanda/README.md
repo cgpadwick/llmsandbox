@@ -2,7 +2,7 @@
 
 A demo showing how to run document Q&A on a text file with a user hosted Large Language Model.  This can be useful for companies or individuals who are not comfortable sending their private data to cloud hosted services (e.g. OpenAI).
 
-In this demo a text file called `shakespeare.txt` which contains all of Shakespeare's plays is indexed using HuggingFace embeddings into a Vectorstore.  Then one of the pre-downloaded models is loaded, and a RetreivalQA chain from langchain is used to run the provided query on the document.  The response from the model is printed out on the screen.
+In this demo a text file called `shakespeare.txt` which contains all of Shakespeare's plays is indexed using HuggingFace embeddings into a Vectorstore.  Then one of the pre-downloaded models is loaded, and a RetrievalQA chain from langchain is used to run the provided query on the document.  The response from the model is printed out on the screen.
 
 OpenAI models can be used with this demo by selecting `--model openai` and answering `Y` to the warning.
 
@@ -24,7 +24,7 @@ Install the pip packages:
 
 ## Downloading The Models
 
-This demo supports a few different models.  Download one or more of them and stick them in the `models` folder.  You don't need them all, you only need 1.  I would recommend ggml-gpt4all-j-v1.3-groovy.bin but better answers will likely come from ggml-gpt4all-l13b-snoozy.bin at the cost of slower inference.
+This demo supports a few different models.  Download one or more of them and stick them in the `models` folder.  You don't need them all, you only need one.  I would recommend ggml-gpt4all-j-v1.3-groovy.bin but better answers will likely come from ggml-gpt4all-l13b-snoozy.bin at the cost of slower inference.
 
 - [ggml-gpt4all-j-v1.3-groovy.bin](https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin)
 - [ggml-gpt4all-l13b-snoozy.bin](https://gpt4all.io/models/ggml-gpt4all-l13b-snoozy.bin)
