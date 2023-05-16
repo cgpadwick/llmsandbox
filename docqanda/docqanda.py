@@ -65,12 +65,12 @@ def create_embeddings(textfile: str, isOpenAI: bool) -> VectorStoreRetriever:
     return docsearch.as_retriever()
 
 
-def load_model(model_name: str, n_ctx: int, n_threads: int) -> Union[GPT4All, LlamaCpp]:
+def load_model(model_name: str, n_ctx: int, n_threads: int) -> Union[GPT4All, LlamaCpp, OpenAI]:
     """
     Loads and returns a machine learning model based on the provided `model_name`.
 
     :param model_name: str, the name of the model to load.
-    :return: Union[GPT4All, LlamaCpp], the loaded model object.
+    :return: Union[GPT4All, LlamaCpp, OpenAI], the loaded model object.
     :raises ValueError: if an invalid `model_name` is provided.
     """
     callbacks = [StreamingStdOutCallbackHandler(), StdOutCallbackHandler()]
