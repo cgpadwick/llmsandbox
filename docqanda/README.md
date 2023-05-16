@@ -24,7 +24,7 @@ Install the pip packages:
 
 ## Downloading The Models
 
-This demo supports a few different models.  Download one or more of them and stick them in the `models` folder.  You don't need them all, you only need 1.  I would recommend ggml-gpt4all-j-v1.3-groovy.bin but better answers will likely come from ggml-gpt4all-l13b-snoozy.bin.
+This demo supports a few different models.  Download one or more of them and stick them in the `models` folder.  You don't need them all, you only need 1.  I would recommend ggml-gpt4all-j-v1.3-groovy.bin but better answers will likely come from ggml-gpt4all-l13b-snoozy.bin at the cost of slower inference.
 
 - [ggml-gpt4all-j-v1.3-groovy.bin](https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin)
 - [ggml-gpt4all-l13b-snoozy.bin](https://gpt4all.io/models/ggml-gpt4all-l13b-snoozy.bin)
@@ -46,5 +46,5 @@ If you choose `--model openai` then you will need an OpenAI API key for this dem
 - Run the demo with `python docqanda.py --inputfile shakespeare.txt`
   - Run new queries using the --query flag
   - Adjust `--threads` for number of threads and `--n_ctx` for the context length
-  - Set the OpenAI enviroment variable (bash) with `export OPENAI_API_KEY="your key goes here"` if you choose `--model openai`
+  - Set the OpenAI environment variable (bash) with `export OPENAI_API_KEY="your key goes here"` if you choose `--model openai`
 
