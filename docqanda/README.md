@@ -24,15 +24,15 @@ Install the pip packages:
 
 This demo supports a few different models.  Download one or more of them and stick them in the `models` folder.
 
-* [ggml-gpt4all-j-v1.3-groovy.bin](https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin)
-* [ggml-gpt4all-l13b-snoozy.bin](https://gpt4all.io/models/ggml-gpt4all-l13b-snoozy.bin)
-* [ggml-alpaca-7b-q4.bin](https://huggingface.co/Sosaka/Alpaca-native-4bit-ggml/tree/main)
-* [gpt4all-lora-quantized.bin](https://huggingface.co/aryan1107/gpt4all-llora/resolve/main/gpt4all-lora-quantized.bin)
+- [ggml-gpt4all-j-v1.3-groovy.bin](https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin)
+- [ggml-gpt4all-l13b-snoozy.bin](https://gpt4all.io/models/ggml-gpt4all-l13b-snoozy.bin)
+- [ggml-alpaca-7b-q4.bin](https://huggingface.co/Sosaka/Alpaca-native-4bit-ggml/tree/main)
+- [gpt4all-lora-quantized.bin](https://huggingface.co/aryan1107/gpt4all-llora/resolve/main/gpt4all-lora-quantized.bin)
 
 ## Running The Code
 
-* Source the virtual env `source venv/bin/activate`
-* Run the demo with `python docqanda.py --inputfile shakespeare.txt`
-** Run new queries using the --query flag
-** Adjust --threads for number of threads and --n_ctx for the context length
+- Source the virtual env `source venv/bin/activate`
+- Run the demo with `python docqanda.py --inputfile shakespeare.txt`
+  - Run new queries using the --query flag
+  - Adjust --threads for number of threads and --n_ctx for the context length
 
