@@ -65,7 +65,9 @@ def create_embeddings(textfile: str, isOpenAI: bool) -> VectorStoreRetriever:
     return docsearch.as_retriever()
 
 
-def load_model(model_name: str, n_ctx: int, n_threads: int) -> Union[GPT4All, LlamaCpp, OpenAI]:
+def load_model(
+    model_name: str, n_ctx: int, n_threads: int
+) -> Union[GPT4All, LlamaCpp, OpenAI]:
     """
     Loads and returns a machine learning model based on the provided `model_name`.
 
@@ -129,12 +131,6 @@ if __name__ == "__main__":
     )
     parser.add_argument("--n_ctx", type=int, default=1024, help="Context size")
     parser.add_argument("--threads", type=int, default=-1, help="Number of threads")
-    parser.add_argument(
-        "--query",
-        type=str,
-        default="Does MENENIUS mention bats and clubs? Explain your answer",
-        help="Query",
-    )
     args = parser.parse_args()
 
     warn_openai(args.model)
@@ -142,4 +138,8 @@ if __name__ == "__main__":
     model = load_model(args.model, args.n_ctx, args.threads)
 
     qa = RetrievalQA.from_chain_type(llm=model, chain_type="stuff", retriever=docsearch)
-    print(qa.run(args.query))
+
+    while True:
+        print("\n\n")
+        query = input("Type a query and press return! ")
+        print(qa.run(query))
