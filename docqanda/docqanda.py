@@ -7,7 +7,7 @@ from langchain.embeddings import HuggingFaceEmbeddings, OpenAIEmbeddings
 from langchain.vectorstores import FAISS, Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores.base import VectorStoreRetriever
-from langchain.document_loaders import TextLoader, PyPDFLoader
+from langchain.document_loaders import TextLoader, UnstructuredPDFLoader
 from langchain.chains import RetrievalQA
 from langchain.llms import GPT4All, LlamaCpp, OpenAI
 from langchain.prompts import PromptTemplate
@@ -49,19 +49,19 @@ def create_embeddings(textfile: str, isOpenAI: bool) -> VectorStoreRetriever:
 
     if not os.path.exists(path=textfile):
         raise FileNotFoundError(f"The file {textfile} does not exist.")
-    
+
     root_ext = os.path.splitext(textfile)
     if root_ext[1].lower() == ".pdf":
-        print('using the pdf document loader')
-        loader = PyPDFLoader(textfile)
-        text = loader.load_and_split()
+        print("using the pdf document loader")
+        loader = UnstructuredPDFLoader(textfile, mode="elements")
+        text = loader.load()
     elif root_ext[1].lower() == ".txt":
-        print('using the text document loader')
+        print("using the text document loader")
         loader = TextLoader(textfile).load()
         text_split = RecursiveCharacterTextSplitter(chunk_size=250, chunk_overlap=0)
         text = text_split.split_documents(loader)
     else:
-        raise Exception('unsupported data type')
+        raise Exception("unsupported data type")
 
     if isOpenAI:
         embeddings = OpenAIEmbeddings()
@@ -151,4 +151,5 @@ if __name__ == "__main__":
     while True:
         print("\n\n")
         query = input("Type a query and press return! ")
-        print(qa.run(query))
+        result = qa.run(query)
+        print(result)
