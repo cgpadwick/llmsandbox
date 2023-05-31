@@ -18,6 +18,16 @@ LOADER = None
 
 
 def check_config(config):
+    """
+    Validates the provided configuration dictionary to ensure that the CONFLUENCE_USER and CONFLUENCE_API_TOKEN
+    keys are present and not empty. Raises an exception if either key is missing or has an empty value.
+
+    Args:
+        config (dict): A dictionary containing the configuration values.
+
+    Raises:
+        Exception: If CONFLUENCE_USER or CONFLUENCE_API_TOKEN are missing or have an empty value.
+    """
     if not "CONFLUENCE_USER" in config or config["CONFLUENCE_USER"] == "":
         raise Exception("CONFLUENCE_USER must be specified in the .env file")
 
@@ -26,6 +36,15 @@ def check_config(config):
 
 
 def descend_from_root(root_id):
+    """
+    Recursively descends through a Confluence page hierarchy, starting from the page with the given 'root_id',
+    and collects all pages under it into a list called 'ALL_RESULTS'.
+
+    :param root_id: The ID of the root page to start descending from.
+    :type root_id: int
+    :return: None
+    :rtype: None
+    """
     page = CONFLUENCE_OBJ.get_page_by_id(root_id)
     print(f'Indexing {page["title"]}')
     docs = LOADER.load(page_ids=[root_id])
@@ -38,6 +57,12 @@ def descend_from_root(root_id):
 
 
 def generate_embeddings(dbdirectory):
+    """
+    Generates embeddings for documents in a given directory using a HuggingFaceEmbeddings model.
+
+    :param dbdirectory: A string representing the path to the directory containing the documents.
+    :return: None
+    """
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
