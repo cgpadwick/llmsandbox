@@ -37,7 +37,62 @@ def warn_openai(model: str):
             exit(1)
 
 
-def create_embeddings(textfile: str, isOpenAI: bool) -> VectorStoreRetriever:
+def check_args(inputfile, dbpath):
+    """
+    Check if either an input file or a database file exists.
+
+    Args:
+        inputfile (str): The path to the input file.
+        dbpath (str): The path to the database file.
+
+    Raises:
+        Exception: If neither inputfile nor dbpath are specified.
+        FileNotFoundError: If inputfile or dbpath does not exist.
+
+    Returns:
+        None
+    """
+
+    if not inputfile and not dbpath:
+        raise Exception("Error: one of --inputfile or --dbpath must be specified")
+
+    if inputfile:
+        if not os.path.exists(inputfile):
+            raise FileNotFoundError(f"The file {inputfile} does not exist.")
+
+    if dbpath:
+        if not os.path.exists(dbpath):
+            raise FileNotFoundError(f"The file {dbpath} does not exist.")
+
+
+def get_embeddings(inputfile: str, dbpath: str, isOpenAI: bool):
+    """
+    generate a retriever object from a text file or a faiss database
+
+    Args:
+        inputfile (str): path to the text file
+        dbpath (str): path to the faiss database
+        isOpenAI (bool): flag to indicate whether to use the sentence-transformers or the openai GPT embeddings
+
+    Returns:
+        Retriever: a Retriever object that can be used to retrieve similar documents
+    """
+    if inputfile:
+        docsearch = create_embeddings_from_textfile(inputfile, isOpenAI=False)
+    elif dbpath:
+        embeddings = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        )
+        docsearch = FAISS.load_local(dbpath, embeddings)
+    else:
+        raise Exception("Error: one of --inputfile or --dbpath must be specified")
+
+    return docsearch.as_retriever()
+
+
+def create_embeddings_from_textfile(
+    textfile: str, isOpenAI: bool
+) -> VectorStoreRetriever:
     """
     Creates embeddings from the given text file and returns a VectorStoreRetriever object to perform
     vector searches on the embeddings.
@@ -71,7 +126,7 @@ def create_embeddings(textfile: str, isOpenAI: bool) -> VectorStoreRetriever:
         )
 
     docsearch = Chroma.from_documents(text, embeddings)
-    return docsearch.as_retriever()
+    return docsearch
 
 
 def load_model(
@@ -120,9 +175,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--inputfile",
-        required=True,
+        required=False,
         type=str,
-        help="Input text file to index",
+        help="Text file to index",
+    )
+    parser.add_argument(
+        "--dbpath",
+        required=False,
+        type=str,
+        help="Path to local FAISS embeddings database",
     )
     parser.add_argument(
         "--model",
@@ -142,11 +203,13 @@ if __name__ == "__main__":
     parser.add_argument("--threads", type=int, default=-1, help="Number of threads")
     args = parser.parse_args()
 
+    check_args(args.inputfile, args.dbpath)
     warn_openai(args.model)
-    docsearch = create_embeddings(args.inputfile, args.model == "openai")
+    docretriever = get_embeddings(args.inputfile, args.dbpath, args.model == "openai")
     model = load_model(args.model, args.n_ctx, args.threads)
-
-    qa = RetrievalQA.from_chain_type(llm=model, chain_type="stuff", retriever=docsearch)
+    qa = RetrievalQA.from_chain_type(
+        llm=model, chain_type="stuff", retriever=docretriever
+    )
 
     while True:
         print("\n\n")
