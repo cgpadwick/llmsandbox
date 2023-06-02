@@ -68,10 +68,10 @@ def generate_embeddings(dbdirectory):
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
     text_split = RecursiveCharacterTextSplitter(chunk_size=250, chunk_overlap=0)
-    chunked_text = text_split.split_documents(ALL_RESULTS)
+    chunked_docs = text_split.split_documents(ALL_RESULTS)
 
     print("Generating embeddings...")
-    vectorstore = FAISS.from_texts(chunked_text, embeddings)
+    vectorstore = FAISS.from_documents(chunked_docs, embeddings)
     print("Complete.  Saving embeddings...")
     fname = datetime.now().strftime(f"{args.rootpageid}_embeddings_%H_%M_%S")
     vectorstore.save_local(os.path.join(args.dbdirectory, fname))
