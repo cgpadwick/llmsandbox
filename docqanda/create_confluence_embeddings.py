@@ -57,17 +57,23 @@ def descend_from_root(root_id):
         descend_from_root(page["id"])
 
 
-def generate_embeddings(dbdirectory):
+def generate_embeddings(dbdirectory, chunksize, overlap):
     """
-    Generates embeddings for documents in a given directory using a HuggingFaceEmbeddings model.
+    Generates embeddings for text data using HuggingFaceEmbeddings and RecursiveCharacterTextSplitter.
 
-    :param dbdirectory: A string representing the path to the directory containing the documents.
-    :return: None
+    :param dbdirectory: The directory where the embeddings will be saved
+    :type dbdirectory: str
+    :param chunksize: The size of text chunks to be processed at a time
+    :type chunksize: int
+    :param overlap: The amount of overlap between adjacent text chunks
+    :type overlap: int
     """
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
-    text_split = RecursiveCharacterTextSplitter(chunk_size=250, chunk_overlap=0)
+    text_split = RecursiveCharacterTextSplitter(
+        chunk_size=chunksize, chunk_overlap=overlap
+    )
     chunked_docs = text_split.split_documents(ALL_RESULTS)
 
     print("Generating embeddings...")
@@ -99,6 +105,20 @@ if __name__ == "__main__":
         default="vectorstoredb",
         help="directory to write the vectorstore database to.",
     )
+    parser.add_argument(
+        "--chunksize",
+        type=int,
+        required=False,
+        default=500,
+        help="Chunk size to use for splitting up documents.",
+    )
+    parser.add_argument(
+        "--overlap",
+        type=int,
+        required=False,
+        default=25,
+        help="Overlap parameter to be used for adjacent documents when they are split up.",
+    )
     args = parser.parse_args()
 
     if not os.path.exists(args.dbdirectory):
@@ -120,4 +140,4 @@ if __name__ == "__main__":
     )
 
     descend_from_root(args.rootpageid)
-    generate_embeddings(args.dbdirectory)
+    generate_embeddings(args.dbdirectory, args.chunksize, args.overlap)
