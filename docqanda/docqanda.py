@@ -3,16 +3,20 @@ import multiprocessing
 import os
 from typing import Union
 
+import torch
+
 from langchain.embeddings import HuggingFaceEmbeddings, OpenAIEmbeddings
 from langchain.vectorstores import FAISS, Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores.base import VectorStoreRetriever
 from langchain.document_loaders import TextLoader, UnstructuredPDFLoader
 from langchain.chains import RetrievalQA
-from langchain.llms import GPT4All, LlamaCpp, OpenAI
+from langchain.llms import GPT4All, LlamaCpp, OpenAI, HuggingFacePipeline
 from langchain.prompts import PromptTemplate
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.callbacks.stdout import StdOutCallbackHandler
+
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 
 def warn_openai(model: str):
@@ -116,7 +120,7 @@ def create_embeddings_from_textfile(
         text_split = RecursiveCharacterTextSplitter(chunk_size=250, chunk_overlap=0)
         text = text_split.split_documents(loader)
     else:
-        raise Exception("unsupported data type")
+        raise Exception("Unsupported data type")
 
     if isOpenAI:
         embeddings = OpenAIEmbeddings()
@@ -142,7 +146,8 @@ def load_model(
     callbacks = [StreamingStdOutCallbackHandler(), StdOutCallbackHandler()]
     n_threads = multiprocessing.cpu_count() if n_threads == -1 else n_threads
 
-    if not model_name == "openai":
+    nonmanaged_models = ["openai", "falcon-7b-instruct"]
+    if not model_name in nonmanaged_models:
         modelfile = f"models/{model_name}"
         if not os.path.exists(modelfile):
             raise ValueError(f"Invalid model path: {modelfile}")
@@ -163,6 +168,19 @@ def load_model(
         model = LlamaCpp(
             model_path=modelfile, callbacks=callbacks, n_ctx=n_ctx, n_threads=n_threads
         )
+    elif model_name == "falcon-7b-instruct":
+        model_id = "tiiuae/falcon-7b-instruct"
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        model = AutoModelForCausalLM.from_pretrained(model_id, trust_remote_code=True)
+        pipe = pipeline(
+            "text-generation",
+            model=model,
+            tokenizer=tokenizer,
+            torch_dtype=torch.bfloat16,
+            trust_remote_code=True,
+            max_new_tokens=256,
+        )
+        model = HuggingFacePipeline(pipeline=pipe)
     elif model_name == "openai":
         model = OpenAI()
     else:
@@ -194,6 +212,7 @@ if __name__ == "__main__":
             "ggml-alpaca-7b-q4.bin",
             "ggml-gpt4all-l13b-snoozy.bin",
             "gpt4all-lora-quantized.bin",
+            "falcon-7b-instruct",
             "openai",
         ],
         default="ggml-gpt4all-j-v1.3-groovy.bin",
