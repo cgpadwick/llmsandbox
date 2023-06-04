@@ -6,6 +6,7 @@ import os
 from atlassian import Confluence
 
 from dotenv import dotenv_values
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.document_loaders import ConfluenceLoader
@@ -45,31 +46,44 @@ def descend_from_root(root_id):
     :return: None
     :rtype: None
     """
-    page = CONFLUENCE_OBJ.get_page_by_id(root_id)
-    print(f'Indexing {page["title"]}')
-    docs = LOADER.load(page_ids=[root_id])
-    for d in docs:
-        ALL_RESULTS.append(d)
+    try:
+        page = CONFLUENCE_OBJ.get_page_by_id(root_id)
+        print(f'Indexing {page["title"]}')
+        docs = LOADER.load(page_ids=[root_id])
+        for d in docs:
+            ALL_RESULTS.append(d)
 
-    children = CONFLUENCE_OBJ.get_child_pages(root_id)
-    for page in children:
-        descend_from_root(page["id"])
+        children = CONFLUENCE_OBJ.get_child_pages(root_id)
+        for page in children:
+            descend_from_root(page["id"])
+    except Exception as e:
+        print(f"Error processing document {root_id}, skipping")
+        return
 
 
-def generate_embeddings(dbdirectory):
+def generate_embeddings(dbdirectory, chunksize, overlap):
     """
-    Generates embeddings for documents in a given directory using a HuggingFaceEmbeddings model.
+    Generates embeddings for text data using HuggingFaceEmbeddings and RecursiveCharacterTextSplitter.
 
-    :param dbdirectory: A string representing the path to the directory containing the documents.
-    :return: None
+    :param dbdirectory: The directory where the embeddings will be saved
+    :type dbdirectory: str
+    :param chunksize: The size of text chunks to be processed at a time
+    :type chunksize: int
+    :param overlap: The amount of overlap between adjacent text chunks
+    :type overlap: int
     """
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
+    text_split = RecursiveCharacterTextSplitter(
+        chunk_size=chunksize, chunk_overlap=overlap
+    )
+    chunked_docs = text_split.split_documents(ALL_RESULTS)
+
     print("Generating embeddings...")
-    vectorstore = FAISS.from_documents(ALL_RESULTS, embeddings)
+    vectorstore = FAISS.from_documents(chunked_docs, embeddings)
     print("Complete.  Saving embeddings...")
-    fname = datetime.now().strftime(f"{args.rootpageid}_embeddings_%H_%M_%S")
+    fname = datetime.now().strftime(f"{args.rootpageid}_embeddings_%Y-%m-%d_%H_%M_%S")
     vectorstore.save_local(os.path.join(args.dbdirectory, fname))
     print("Done.")
 
@@ -95,6 +109,20 @@ if __name__ == "__main__":
         default="vectorstoredb",
         help="directory to write the vectorstore database to.",
     )
+    parser.add_argument(
+        "--chunksize",
+        type=int,
+        required=False,
+        default=500,
+        help="Chunk size to use for splitting up documents.",
+    )
+    parser.add_argument(
+        "--overlap",
+        type=int,
+        required=False,
+        default=25,
+        help="Overlap parameter to be used for adjacent documents when they are split up.",
+    )
     args = parser.parse_args()
 
     if not os.path.exists(args.dbdirectory):
@@ -116,4 +144,4 @@ if __name__ == "__main__":
     )
 
     descend_from_root(args.rootpageid)
-    generate_embeddings(args.dbdirectory)
+    generate_embeddings(args.dbdirectory, args.chunksize, args.overlap)

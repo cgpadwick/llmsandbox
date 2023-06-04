@@ -107,11 +107,11 @@ def create_embeddings_from_textfile(
 
     root_ext = os.path.splitext(textfile)
     if root_ext[1].lower() == ".pdf":
-        print("using the pdf document loader")
+        print("Using the pdf document loader")
         loader = UnstructuredPDFLoader(textfile, mode="elements")
         text = loader.load()
     elif root_ext[1].lower() == ".txt":
-        print("using the text document loader")
+        print("Using the text document loader")
         loader = TextLoader(textfile).load()
         text_split = RecursiveCharacterTextSplitter(chunk_size=250, chunk_overlap=0)
         text = text_split.split_documents(loader)

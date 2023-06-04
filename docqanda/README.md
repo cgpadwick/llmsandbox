@@ -40,7 +40,7 @@ If you choose `--model openai` then you will need an OpenAI API key for this dem
 * Create a new secret key, and copy it to your clipboard.
 * You will need to save this secret key somewhere.
 
-## Running The Code
+## Running On A Text File
 
 - Source the virtual env `source venv/bin/activate`
 - Run the demo with `python docqanda.py --inputfile shakespeare.txt`
@@ -48,3 +48,63 @@ If you choose `--model openai` then you will need an OpenAI API key for this dem
   - Adjust `--threads` for number of threads and `--n_ctx` for the context length
   - Set the OpenAI environment variable (bash) with `export OPENAI_API_KEY="your key goes here"` if you choose `--model openai`
 
+## Running Document Q&A On A Set Of Confluence Documents
+
+You can run document Q&A on a set of confluence documents!  It is a two step process.  First, you create a vectorstore index from confluence documents and store that index on disk.  Then you run `docqanda.py` and point it at the index.  Follow the steps below.
+
+### Create a .env file with the confluence credentials
+
+Create a file called ".env" in the docqanda directory.  The file should contain the following contents:
+
+```
+CONFLUENCE_USER="yourconfluenceemail"
+CONFLUENCE_API_TOKEN="yourapitoken"
+```
+The user and api token can be be retreived from the confluence dashboard.
+
+### Identify The Page You'd Like To Index and Generate The Index
+
+The help for the `create_confluence_embeddings.py` script is shown below.
+
+```
+python create_confluence_embeddings.py --help
+usage: create_confluence_embeddings.py [-h] --confluenceurl CONFLUENCEURL --rootpageid ROOTPAGEID
+                                       [--dbdirectory DBDIRECTORY] [--chunksize CHUNKSIZE] [--overlap OVERLAP]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --confluenceurl CONFLUENCEURL
+                        The URL of the confluence space, e.g. https://mycompanyname.atlassian.net
+  --rootpageid ROOTPAGEID
+                        The page id of the root confluence page to be indexed
+  --dbdirectory DBDIRECTORY
+                        directory to write the vectorstore database to.
+  --chunksize CHUNKSIZE
+                        Chunk size to use for splitting up documents.
+  --overlap OVERLAP     Overlap parameter to be used for adjacent documents when they are split up
+``` 
+
+They utility is designed to accept a root page id and will index the given page and recursively index all children pages found underneath the root.  This is done to give the user more control over what gets indexed (the confluence loader in langchain by default indexes everything in a space). With this utility you can get more fine-grained control over what gets indexed.
+
+You can find the root page id by navigating to the page you want to index in confluence and recording the integer in the URL after the "pages" element.
+
+You also need the base confluence url, which would typically be something like `https://companyname.atlassian.net`
+
+As an example, let's say that your company was called "acme" and the page you wanted to index was called `https://acme.atlassian.net/wiki/spaces/ACME/pages/509870119/Acme+Software`.  Then you could run the indexing utility like this:
+
+```
+python create_confluence_embeddings.py --confluenceurl https://acme.atlassian.net --rootpageid 509870119
+```
+
+This will launch a process that will index that page and recursively index everything underneath it.  The documents will be chunked up (chunking controlled by the `--chunksize` and `--overlap` parameters) and HuggingFace embeddings will be created for each document.  The embeddings will be stored in a FAISS vector database on disk in the `vectorstoredb` directory.  The index will be stored in a directory named `vectorstoredb/509870199_embeddings_YYYY_MM_DD_HH_MM_SS`
+
+
+### Run Document Q&A With The Stored Index
+
+Now you can run document Q&A on the stored embeddings db like this:
+
+```
+python docqanda.py --dbpath vectorstoredb/509870199_embeddings_YYYY_MM_DD_HH_MM_SS --model ggml-alpaca-7b-q4.bin
+```
+
+And now the queries will be returned against the indexed confluence documents!
