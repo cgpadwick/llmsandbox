@@ -49,8 +49,8 @@ def descend_from_root(root_id):
     :return: None
     :rtype: None
     """
-    print(f'Indexing {page["title"]}')
     page = CONFLUENCE_OBJ.get_page_by_id(root_id)
+    print(f'Indexing {page["title"]}')
     text = BeautifulSoup(page["body"]["storage"]["value"], "lxml").get_text()
     doc = Document(
         page_content=text,
