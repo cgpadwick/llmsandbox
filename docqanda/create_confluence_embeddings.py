@@ -5,10 +5,7 @@ import os
 
 from atlassian import Confluence
 
-from bs4 import BeautifulSoup
-
 from dotenv import dotenv_values
-from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
@@ -49,26 +46,19 @@ def descend_from_root(root_id):
     :return: None
     :rtype: None
     """
-    page = CONFLUENCE_OBJ.get_page_by_id(root_id)
-    print(f'Indexing {page["title"]}')
-    text = BeautifulSoup(page["body"]["storage"]["value"], "lxml").get_text()
-    doc = Document(
-        page_content=text,
-        metadata={
-            "title": page["title"],
-            "id": page["id"],
-            "source": page["_links"]["webui"],
-        },
-    )
-    ALL_RESULTS.append(doc)
+    try:
+        page = CONFLUENCE_OBJ.get_page_by_id(root_id)
+        print(f'Indexing {page["title"]}')
+        docs = LOADER.load(page_ids=[root_id])
+        for d in docs:
+            ALL_RESULTS.append(d)
 
-    # docs = LOADER.load(page_ids=[root_id])
-    # for d in docs:
-    #    ALL_RESULTS.append(d)
-
-    children = CONFLUENCE_OBJ.get_child_pages(root_id)
-    for page in children:
-        descend_from_root(page["id"])
+        children = CONFLUENCE_OBJ.get_child_pages(root_id)
+        for page in children:
+            descend_from_root(page["id"])
+    except Exception as e:
+        print(f"Error processing document {root_id}, skipping")
+        return
 
 
 def generate_embeddings(dbdirectory, chunksize, overlap):
@@ -93,7 +83,7 @@ def generate_embeddings(dbdirectory, chunksize, overlap):
     print("Generating embeddings...")
     vectorstore = FAISS.from_documents(chunked_docs, embeddings)
     print("Complete.  Saving embeddings...")
-    fname = datetime.now().strftime(f"{args.rootpageid}_embeddings_%H_%M_%S")
+    fname = datetime.now().strftime(f"{args.rootpageid}_embeddings_%Y-%m-%d_%H_%M_%S")
     vectorstore.save_local(os.path.join(args.dbdirectory, fname))
     print("Done.")
 
