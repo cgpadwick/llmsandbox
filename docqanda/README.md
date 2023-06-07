@@ -1,8 +1,8 @@
-# Document Q&A On A Given Text File
+# Document Q&A Using Privately Hosted Models
 
-A demo showing how to run document Q&A on a text file with a user hosted Large Language Model.  This can be useful for companies or individuals who are not comfortable sending their private data to cloud hosted services (e.g. OpenAI).
+A demo showing how to run document Q&A on user files with a privately hosted Large Language Model.  This can be useful for companies or individuals who are not comfortable sending their private data to cloud hosted services (e.g. OpenAI).
 
-In this demo a text file called `shakespeare.txt` which contains all of Shakespeare's plays is indexed using HuggingFace embeddings into a Vectorstore.  Then one of the pre-downloaded models is loaded, and a RetrievalQA chain from langchain is used to run the provided query on the document.  The response from the model is printed out on the screen.
+In this demo a text file called `shakespeare.txt` which contains all of Shakespeare's plays is indexed using HuggingFace embeddings into a Vectorstore.  Then one of the pre-downloaded models is loaded, and a RetrievalQA chain from langchain is used to run the provided query on the document.  The response from the model is printed out on the screen.  The demo also supports generating document Q&A on a body of confluence documents stored in a vector DB.
 
 OpenAI models can be used with this demo by selecting `--model openai` and answering `Y` to the warning.
 
