@@ -1,21 +1,21 @@
 import argparse
 from datetime import datetime
+import string
 from typing import List
 import os
 
 from atlassian import Confluence
+from bs4 import BeautifulSoup
 
 from dotenv import dotenv_values
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
-from langchain.document_loaders import ConfluenceLoader
 from langchain.schema import Document
 
 
 ALL_RESULTS = []
 CONFLUENCE_OBJ = None
-LOADER = None
 
 
 def check_config(config):
@@ -47,11 +47,22 @@ def descend_from_root(root_id):
     :rtype: None
     """
     try:
-        page = CONFLUENCE_OBJ.get_page_by_id(root_id)
+        page = CONFLUENCE_OBJ.get_page_by_id(root_id, expand="body.storage.value")
         print(f'Indexing {page["title"]}')
-        docs = LOADER.load(page_ids=[root_id])
-        for d in docs:
-            ALL_RESULTS.append(d)
+        text = BeautifulSoup(page["body"]["storage"]["value"], "lxml").get_text(
+            " ", strip=True
+        )
+        filtered_string = "".join(filter(lambda x: x in string.printable, text))
+
+        doc = Document(
+            page_content=filtered_string,
+            metadata={
+                "title": page["title"],
+                "id": page["id"],
+                "source": page["_links"]["webui"],
+            },
+        )
+        ALL_RESULTS.append(doc)
 
         children = CONFLUENCE_OBJ.get_child_pages(root_id)
         for page in children:
@@ -135,12 +146,6 @@ if __name__ == "__main__":
         url=args.confluenceurl,
         username=config["CONFLUENCE_USER"],
         password=config["CONFLUENCE_API_TOKEN"],
-    )
-
-    LOADER = ConfluenceLoader(
-        url=args.confluenceurl,
-        username=config["CONFLUENCE_USER"],
-        api_key=config["CONFLUENCE_API_TOKEN"],
     )
 
     descend_from_root(args.rootpageid)
