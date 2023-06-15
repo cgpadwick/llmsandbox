@@ -108,3 +108,23 @@ python docqanda.py --dbpath vectorstoredb/509870199_embeddings_YYYY_MM_DD_HH_MM_
 ```
 
 And now the queries will be returned against the indexed confluence documents!
+
+### Run The Streamlit Web App
+
+You can run the streamlit web app if you like.  It will give you a simple GUI to interact with the chatbot with.  It is pictured below.
+
+![Alt text](graphics/screenshot.png?raw=true "The Chatbot Streamlit Web App")
+
+To run the app, first edit the file app.py.  Change these lines to be something meaningful and point them to embeddings you generated above.
+
+```
+# Edit these definitions to your liking, the key should be a meaningful huma readable name
+# and the value should be the path to the precomputed embeddings.
+EMBEDDINGS_DICT = {
+    "Cool File 1": "vectorstoredb/1756626953_embeddings_2023-06-09_15_46_44",
+    "Cool Thing 2": "vectorstoredb/481886456_embeddings_2023-06-09_17_06_41",
+}
+```
+
+Save the file and then run `streamlit run app.py` from the directory.  A browser window should pop up and you will be able to interact with the chatbot, and query each document that you have built embeddings for.  Don't forget to press "Submit" when you change things on the side panel!
+
